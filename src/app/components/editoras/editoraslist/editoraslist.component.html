@@ -1,0 +1,66 @@
+<br>
+<div class="container">
+
+    <div class="row">
+        <div class="col-lg-4"></div>
+
+        <div class="col-lg-12 centralizar topo">
+            <div class="card">
+                <h3>Editoras Cadastradas</h3>
+                <br>
+                <div class="direita">
+                    <button type="button" class="btn btn-primary btn-rounded" data-mdb-ripple-init (click)="new()">
+                        Novo
+                    </button>
+                </div>
+                <br>
+                <table  class="table table-striped">
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Açoes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (editora of lista; track $index) {
+                            <tr>
+                                <td>{{editora.id}}</td>
+                                <td>{{editora.nome}}</td>
+                                <td class="direita">
+                                    <button type="button" class="btn btn-primary btn-rounded" data-mdb-ripple-init (click)="edit(editora)">
+                                        Editar
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-rounded" data-mdb-ripple-init (click)="deletar(editora)">
+                                        Deletar
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<ng-template #editoraLivrosDetalhe>
+    <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Cadastro</h5>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          (click)="modalRef.close()"
+        ></button>
+      </div>
+      <div class="modal-body">
+        
+        <app-editorasdetails [editora]="editoraEdit" (retorno)="retornoDetalhe($event)"></app-editorasdetails>
+
+      </div>
+      
+</ng-template>

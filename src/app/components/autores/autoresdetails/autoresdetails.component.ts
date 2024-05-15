@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Autor } from '../../../models/autor';
 import { ActivatedRoute, Router } from '@angular/router';
 import Swal from 'sweetalert2'
+import { AutoresService } from '../../../services/autores.service';
 
 @Component({
   selector: 'app-autoresdetails',
@@ -20,6 +21,8 @@ export class AutoresdetailsComponent {
   router = inject(ActivatedRoute);
   router2 = inject(Router);
 
+  autorService = inject(AutoresService);
+
 
   constructor(){
     let id = this.router.snapshot.params['id'];
@@ -33,25 +36,58 @@ export class AutoresdetailsComponent {
     this.autor = autorRetornado;
   }
 
-  salvar(){
+  save(){
     if(this.autor.id > 0){
-      Swal.fire({
-        title: 'Editado com sucesso!',
-        icon: 'success',
-        confirmButtonText: 'Ok'
-      })
-      this.router2.navigate(['admin/autores'],{state: {autorEditado: this.autor}})
+      this.autorService.update(this.autor).subscribe({
+        next: retorno => {
+
+          Swal.fire({
+            title: 'Editado com sucesso!',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          });
+          this.router2.navigate(['admin/autores'], { state: { autorNovo: this.autor } });
+          this.retorno.emit(this.autor);
+    
+        },
+        error: erro => {
+
+          alert(erro.status);
+          console.log(erro);
+         
+          Swal.fire({
+            title: 'Erro ao alterar',
+            icon: 'error',
+            confirmButtonText: 'Ok'
+          });
+
+        }
+      } );
     }
     else{
-      Swal.fire({
-        title: 'Salvo com sucesso!',
-        icon: 'success',
-        confirmButtonText: 'Ok'
-      })
-      this.router2.navigate(['admin/autores'],{state: {autorNovo: this.autor}})
-    }
+      this.autorService.save(this.autor).subscribe({
+        next: retorno=> {
+          Swal.fire({
+            title: 'Salvo com sucesso!',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          });
+          this.router2.navigate(['admin/autores'],{state: {autorNovo: this.autor}});
+          this.retorno.emit(this.autor);
+        },
+        error: erro=> {
+          alert(erro.status);
+          console.log(erro);
 
-    this.retorno.emit(this.autor);
+          Swal.fire({
+            title: 'Erro!',
+            icon: 'error',
+            confirmButtonText: 'Ok'
+          });
+        }
+
+      })
+    }
   }
 
 }

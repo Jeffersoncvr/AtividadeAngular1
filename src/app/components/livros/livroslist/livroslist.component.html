@@ -10,7 +10,7 @@
                 <br>
                 <div class="direita">
                     <button type="button" class="btn btn-primary btn-rounded" data-mdb-ripple-init (click)="new()">
-                        Novo
+                        <i class="fas fa-save"></i>
                     </button>
                 </div>
                 <br>
@@ -30,10 +30,10 @@
                                 <td>{{livro.nome}}</td>
                                 <td class="direita">
                                     <button type="button" class="btn btn-primary btn-rounded" data-mdb-ripple-init (click)="edit(livro)">
-                                        Editar
+                                        <i class="fas fa-pen"></i>
                                     </button>
-                                    <button type="button" class="btn btn-danger btn-rounded" data-mdb-ripple-init (click)="deletar(livro)">
-                                        Deletar
+                                    <button type="button" class="btn btn-danger btn-rounded" data-mdb-ripple-init (click)="deleteById(livro)">
+                                        <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </td>
                             </tr>

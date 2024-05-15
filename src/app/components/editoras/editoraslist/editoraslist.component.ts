@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2'
 import { EditorasdetailsComponent } from '../editorasdetails/editorasdetails.component';
 import { MdbModalModule, MdbModalRef, MdbModalService } from 'mdb-angular-ui-kit/modal';
+import { EditoraService } from '../../../services/editora.service';
 
 @Component({
   selector: 'app-editoraslist',
@@ -21,16 +22,17 @@ export class EditoraslistComponent {
   @ViewChild("editoraLivrosDetalhe") editoraLivrosDetalhe !: TemplateRef<any>;
   modalRef !: MdbModalRef<any>;
 
+
+  editoraService = inject(EditoraService);
+
   constructor(){
-    this.lista.push(new Editora(1, 'Suma'));
-    this.lista.push(new Editora(2, "LaFonte"));
-    this.lista.push(new Editora(3,'Arqueiro'));
+    
+    this.listAll();
 
     let editoraNova = history.state.editoraNova;
     let editoraEditada = history.state.editoraEditada;
 
     if(editoraNova){
-      editoraNova.id=123;
       this.lista.push(editoraNova);
 
     }
@@ -43,7 +45,7 @@ export class EditoraslistComponent {
 
   }
 
-  deletar(editora : Editora){
+  deleteById(editora : Editora){
 
     Swal.fire({
       title: 'Tem certeza eu deseja deletar esta editora?!',
@@ -55,8 +57,29 @@ export class EditoraslistComponent {
 
     }).then((result) => {
       if (result.isConfirmed) {
-          let indice = this.lista.findIndex(x => {return x.id ==  editora.id});
-          this.lista.splice(indice, 1 );        
+        this.editoraService.delete(editora.id).subscribe({
+          next: retorno => {
+  
+            Swal.fire({
+              title: 'Deletado com sucesso!',
+              icon: 'success',
+              confirmButtonText: 'Ok'
+            });
+            this.listAll();
+          },
+          error: erro => {
+  
+            alert(erro.status);
+            console.log(erro);
+           
+            Swal.fire({
+              title: 'Erro ao deletar o livro!',
+              icon: 'error',
+              confirmButtonText: 'Ok'
+            });
+  
+          }
+        } );      
       }});
   }
   new(){
@@ -68,14 +91,20 @@ export class EditoraslistComponent {
     this.modalRef = this.modalService.open(this.editoraLivrosDetalhe);
   }
   retornoDetalhe(editora : Editora){
+    this.listAll();
     this.modalRef.close();
-
-    if(editora.id>0){
-      let indice = this.lista.findIndex(x => {return x.id == editora.id});
-      this.lista[indice] = editora;
-    }else{
-      editora.id = 123;
-      this.lista.push(editora);
-    }
   }
+  listAll(){
+
+    this.editoraService.listAll().subscribe({
+      next: lista => {
+        this.lista = lista;
+      },
+      error: erro => {
+        alert('Erro ao retornar editoras!');
+      }
+
+    } );
+
+}
 }

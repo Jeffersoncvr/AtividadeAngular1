@@ -4,6 +4,7 @@ import { FormsModule, NumberValueAccessor } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { state } from '@angular/animations';
 import Swal from 'sweetalert2'
+import { LivrosService } from '../../../services/livros.service';
 
 
 @Component({
@@ -21,6 +22,9 @@ export class LivrosdetailsComponent {
   router  = inject(ActivatedRoute);
   router2= inject(Router)
 
+  livroService = inject(LivrosService);
+
+
   constructor(){
     let id = this.router.snapshot.params['id'];
     if(id > 0 ){
@@ -29,28 +33,75 @@ export class LivrosdetailsComponent {
   }
 
   findById(id : number){
-    let livroRetornado : Livro = new Livro(id, 'Alterado');
-    this.livro = livroRetornado;
+    this.livroService.findById(id).subscribe({
+      next: livro => {
+        this.livro = livro;
+      },
+      error: erro => {
+        alert(erro.status);
+        console.log(erro);
+        Swal.fire({
+          title: 'Deu algum erro!',
+          icon: 'error',
+          confirmButtonText: 'Ok'
+        });
+      }
+    } );
   }
 
-  salvar(){
+  save(){
     if(this.livro.id > 0){
-      Swal.fire({
-        title: 'Editado com sucesso!',
-        icon: 'success',
-        confirmButtonText: 'Ok'
-      });
-      this.router2.navigate(['admin/livros'],{state: {livroEditado: this.livro}});
+      this.livroService.update(this.livro).subscribe({
+        next: retorno => {
+
+          Swal.fire({
+            title: 'Editado com sucesso!',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          });
+          this.router2.navigate(['admin/livros'], { state: { livroNovo: this.livro } });
+          this.retorno.emit(this.livro);
+    
+        },
+        error: erro => {
+
+          alert(erro.status);
+          console.log(erro);
+         
+          Swal.fire({
+            title: 'Erro ao alterar',
+            icon: 'error',
+            confirmButtonText: 'Ok'
+          });
+
+        }
+      } );
     }
     else{
-      Swal.fire({
-        title: 'Salvo com sucesso!',
-        icon: 'success',
-        confirmButtonText: 'Ok'
-      });
-      this.router2.navigate(['admin/livros'],{state: {livroNovo: this.livro}});
+
+      this.livroService.save(this.livro).subscribe({
+        next: retorno=> {
+          Swal.fire({
+            title: 'Salvo com sucesso!',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          });
+          this.router2.navigate(['admin/livros'],{state: {livroNovo: this.livro}});
+          this.retorno.emit(this.livro);
+        },
+        error: erro=> {
+          alert(erro.status);
+          console.log(erro);
+
+          Swal.fire({
+            title: 'Erro!',
+            icon: 'error',
+            confirmButtonText: 'Ok'
+          });
+        }
+
+      })
+      
     }
-    
-    this.retorno.emit(this.livro);
   }
 }

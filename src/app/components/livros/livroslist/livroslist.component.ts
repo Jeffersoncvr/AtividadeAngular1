@@ -5,6 +5,7 @@ import { MdbModalModule, MdbModalRef, MdbModalService } from 'mdb-angular-ui-kit
 
 import Swal from 'sweetalert2'
 import { LivrosdetailsComponent } from '../livrosdetails/livrosdetails.component';
+import { LivrosService } from '../../../services/livros.service';
 
 @Component({
   selector: 'app-livroslist',
@@ -22,19 +23,17 @@ export class LivroslistComponent {
   @ViewChild("modalLivrosDetalhe") modalLivrosDetalhe !: TemplateRef<any>;
   modalRef !: MdbModalRef<any>;
 
+
+  livroService = inject(LivrosService);
+
   constructor(){
 
-
-    this.lista.push(new Livro(1, 'Harry Potter e a Pedra Filosofal'));
-    this.lista.push(new Livro(2, 'O Hobbit'));
-    this.lista.push(new Livro(3, 'Pequeno Principe'));
-    this.lista.push(new Livro(4, 'A cabana'));
+    this.listAll();
 
     let livroNovo = history.state.livroNovo;
     let livroEditado = history.state.livroEditado;
 
     if(livroNovo){
-      livroNovo.id=123;
       this.lista.push(livroNovo);
 
     }
@@ -47,7 +46,7 @@ export class LivroslistComponent {
 
   }
 
-  deletar(livro : Livro){
+  deleteById(livro : Livro){
     Swal.fire({
       title: 'Tem certeza eu deseja deletar este livro?!',
       icon: 'warning',
@@ -58,8 +57,29 @@ export class LivroslistComponent {
 
     }).then((result) => {
       if (result.isConfirmed) {
-          let indice = this.lista.findIndex(x => {return x.id ==  livro.id});
-          this.lista.splice(indice, 1 );        
+        this.livroService.delete(livro.id).subscribe({
+          next: retorno => {
+  
+            Swal.fire({
+              title: 'Deletado com sucesso!',
+              icon: 'success',
+              confirmButtonText: 'Ok'
+            });
+            this.listAll();
+          },
+          error: erro => {
+  
+            alert(erro.status);
+            console.log(erro);
+           
+            Swal.fire({
+              title: 'Erro ao deletar o livro!',
+              icon: 'error',
+              confirmButtonText: 'Ok'
+            });
+  
+          }
+        } );   
       }});
 
     
@@ -73,14 +93,22 @@ export class LivroslistComponent {
     this.modalRef = this.modalService.open(this.modalLivrosDetalhe);
   }
   retornoDetalhe(livro : Livro){
+    this.listAll();
     this.modalRef.close();
-
-    if(livro.id>0){
-      let indice = this.lista.findIndex(x => {return x.id == livro.id});
-      this.lista[indice] = livro;
-    }else{
-      livro.id = 123;
-      this.lista.push(livro);
-    }
+    
   }
+  listAll(){
+
+      this.livroService.listAll().subscribe({
+        next: lista => {
+          this.lista = lista;
+        },
+        error: erro => {
+          alert('Erro ao retornar livros!');
+        }
+
+      } );
+
+  }
+  
 }

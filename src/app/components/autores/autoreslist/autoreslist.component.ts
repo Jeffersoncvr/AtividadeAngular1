@@ -5,6 +5,7 @@ import Swal from 'sweetalert2'
 import { LivrosdetailsComponent } from '../../livros/livrosdetails/livrosdetails.component';
 import { MdbModalModule, MdbModalRef, MdbModalService } from 'mdb-angular-ui-kit/modal';
 import { AutoresdetailsComponent } from '../autoresdetails/autoresdetails.component';
+import { AutoresService } from '../../../services/autores.service';
 
 @Component({
   selector: 'app-autoreslist',
@@ -22,20 +23,17 @@ export class AutoreslistComponent {
   @ViewChild("modalAutorDetalhe") modalAutorDetalhe !: TemplateRef<any>;
   modalRef !: MdbModalRef<any>;
 
+  autorService = inject(AutoresService);
+
   
   constructor(){
-    
-    this.lista.push(new Autor(1, 'Stephen King'));
-    this.lista.push(new Autor(2, 'H.P Lovecraft'));
-    this.lista.push(new Autor(3, 'Jk Rowling'));
-    this.lista.push(new Autor(4, 'Joe Hill'));
-
+   
+    this.listAll();
 
     let autorNovo = history.state.autorNovo;
     let autorEditado = history.state.autorEditado;
 
     if(autorNovo){
-      autorNovo.id=123;
       this.lista.push(autorNovo);
 
     }
@@ -47,7 +45,7 @@ export class AutoreslistComponent {
     
   }
 
-  deletar(autor : Autor){
+  deleteById(autor : Autor){
 
     Swal.fire({
       title: 'Tem certeza eu deseja deletar este autor?!',
@@ -59,8 +57,30 @@ export class AutoreslistComponent {
 
     }).then((result) => {
       if (result.isConfirmed) {
-          let indice = this.lista.findIndex(x => {return x.id == autor.id});
-          this.lista.splice(indice, 1 );        
+          this.autorService.delete(autor.id).subscribe({
+          next: retorno => {
+  
+            Swal.fire({
+              title: 'Deletado com sucesso!',
+              icon: 'success',
+              confirmButtonText: 'Ok'
+            });
+            this.listAll();
+          },
+          error: erro => {
+  
+            alert(erro.status);
+            console.log(erro);
+           
+            Swal.fire({
+              title: 'Erro ao deletar o livro!',
+              icon: 'error',
+              confirmButtonText: 'Ok'
+            });
+  
+          }
+        } );       
+          
       }});
   }
   new(){
@@ -72,14 +92,20 @@ export class AutoreslistComponent {
     this.modalRef = this.modalService.open(this.modalAutorDetalhe);
   }
   retornoDetalhe(autor : Autor){
+    this.listAll();
     this.modalRef.close();
+  }
+  listAll(){
 
-    if(autor.id>0){
-      let indice = this.lista.findIndex(x => {return x.id == autor.id});
-      this.lista[indice] = autor;
-    }else{
-      autor.id = 123;
-      this.lista.push(autor);
-    }
+    this.autorService.listAll().subscribe({
+      next: lista => {
+        this.lista = lista;
+      },
+      error: erro => {
+        alert('Erro ao retornar autores!');
+      }
+
+    } );
+
   }
 }
